@@ -37,17 +37,17 @@ int main (int argc, char *argv[]) {
     }
   }
 
-  /* These lines allow us to tread argc and argv as though 
+  /* These lines allow us to tread argc and argv as though
    * any switches were not there */
   argc -= optind;
   argv += optind;
-  
+
   if (argc > 0) {
     TR_FAILSAFE(TrVM_load(vm, argv[argc-1]));
     return 0;
   }
-  
+
   TrVM_destroy(vm);
-  
+
   return usage();
 }

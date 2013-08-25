@@ -7,6 +7,7 @@
 #include <assert.h>
 #include <errno.h>
 
+#include <gc.h>
 #include <pcre.h>
 
 #include "config.h"
@@ -16,9 +17,9 @@
 #define UNUSED(expr)         do { (void)(expr); } while (0)
 
 /* allocation macros */
-#define TR_MALLOC            malloc
-#define TR_CALLOC(m,n)       malloc((m)*(n))
-#define TR_REALLOC           realloc
+#define TR_MALLOC            GC_malloc
+#define TR_CALLOC(m,n)       GC_MALLOC((m)*(n))
+#define TR_REALLOC           GC_realloc
 #define TR_FREE(S)           UNUSED(S)
 
 /* type convertion macros */
