@@ -19,3 +19,6 @@ puts a[4]
 a[1] = 5
 puts a[1]
 # => 5
+
+puts a.last
+# => 4

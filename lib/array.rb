@@ -1,6 +1,6 @@
 class Array
   include Enumerable
-  
+
   def each
     i = 0
     while i < size
@@ -8,11 +8,15 @@ class Array
       i = i + 1
     end
   end
-  
+
   def first
     self[0]
   end
-  
+
+  def last
+    self[size-1]
+  end
+
   def join(sep="")
     s = ""
     each do |i|
@@ -21,11 +25,11 @@ class Array
     end
     s
   end
-  
+
   def to_s
     join
   end
-  
+
   def inspect
     str = map do |i|
       i.inspect
