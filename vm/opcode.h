@@ -37,13 +37,13 @@
 #define SET_OPCODE(i,o) ((i) = (((i)&MASK0(SIZE_OP,POS_OP)) | \
     ((cast(TrInst, o)<<POS_OP)&MASK1(SIZE_OP,POS_OP))))
 
-#define GETARG_A(i) (cast(int, ((i)>>POS_A) & MASK1(SIZE_A,0)))
-#define SETARG_A(i,u) ((i) = (((i)&MASK0(SIZE_A,POS_A)) | \
-    ((cast(TrInst, u)<<POS_A)&MASK1(SIZE_A,POS_A))))
+#define GETARG_A(i) (cast(int, ((i)>>POS_A) & MASK1(SIZE_A, 0)))
+#define SETARG_A(i,u) ((i) = (((i) & MASK0(SIZE_A, POS_A)) | \
+    ((cast(TrInst, u)<<POS_A) & MASK1(SIZE_A,POS_A))))
 
 #define GETARG_B(i) (cast(int, ((i)>>POS_B) & MASK1(SIZE_B,0)))
-#define SETARG_B(i,b) ((i) = (((i)&MASK0(SIZE_B,POS_B)) | \
-    ((cast(TrInst, b)<<POS_B)&MASK1(SIZE_B,POS_B))))
+#define SETARG_B(i,b) ((i) = (((i) & MASK0(SIZE_B,POS_B)) | \
+    ((cast(TrInst, b)<<POS_B) & MASK1(SIZE_B,POS_B))))
 
 #define GETARG_C(i) (cast(int, ((i)>>POS_C) & MASK1(SIZE_C,0)))
 #define SETARG_C(i,b) ((i) = (((i)&MASK0(SIZE_C,POS_C)) | \
@@ -202,7 +202,7 @@ enum TrInstCode {
   &&op_LT, \
   &&op_NEG, \
   &&op_NOT
-  
+
 #endif
 
 #endif /* _OPCODE_H_ */

@@ -1,9 +1,9 @@
 # A 'syntax-directed interpreter' (all execution is a side-effect of parsing).
 # Inspired by Dennis Allison's original Tiny BASIC grammar, circa 1975.
-# 
+#
 # Copyright (c) 2007 by Ian Piumarta
 # All rights reserved.
-# 
+#
 # Permission is hereby granted, free of charge, to any person obtaining a
 # copy of this software and associated documentation files (the 'Software'),
 # to deal in the Software without restriction, including without limitation
@@ -13,9 +13,9 @@
 # permission notice appear in all copies of the Software.  Acknowledgement
 # of the use of this Software in supporting documentation would be
 # appreciated but is not required.
-# 
+#
 # THE SOFTWARE IS PROVIDED 'AS IS'.  USE ENTIRELY AT YOUR OWN RISK.
-# 
+#
 # Last edited: 2007-05-14 11:32:49 by piumarta on emilia
 
 %{
@@ -35,7 +35,8 @@
   int   pc= -1, epc= -1;
   int   batch= 0;
 
-  int getline(char *buf, int max);
+  int _getline(char *buf, int max);
+  int findLine(int n, int create);
 
 # define min(x, y) ((x) < (y) ? (x) : (y))
 
@@ -48,7 +49,7 @@
         memcpy(buf, linep->text, result);	\
       }						\
     else					\
-      result= getline(buf, max_size);		\
+      result= _getline(buf, max_size);		\
   }
 
   union value {
@@ -95,7 +96,7 @@ statement = 'print'- expr-list
 |           'goto'- e:expression			{ epc= pc;  if ((pc= findLine(e.number, 0)) < 0) error("no such line"); }
 |           'input'- var-list
 |           'let'- v:var EQUAL e:expression		{ variables[v.number]= e.number; }
-|           'gosub'- e:expression			{ epc= pc;  if (sp < 1024) stack[sp++]= pc, pc= findLine(e.number); else error("too many gosubs");
+|           'gosub'- e:expression			{ epc= pc;  if (sp < 1024) stack[sp++]= pc, pc= findLine(e.number, 0); else error("too many gosubs");
 							  if (pc < 0) error("no such line"); }
 |           'return'-					{ epc= pc;  if ((pc= sp ? stack[--sp] : -1) < 0) error("no gosub"); }
 |           'clear'-					{ while (numLines) accept(lines->number, "\n"); }
@@ -198,7 +199,7 @@ void error(char *fmt, ...)
 # include <readline/history.h>
 #endif
 
-int getline(char *buf, int max)
+int _getline(char *buf, int max)
 {
   pc= -1;
   if (batch) exit(0);

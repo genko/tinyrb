@@ -152,6 +152,7 @@ static inline OBJ TrVM_yield(VM, TrFrame *f, int argc, OBJ argv[]) {
 #define RETURN(V) \
   /* TODO GC release everything on the stack before returning */ \
   return (V)
+
 #define VM_RETHROW(R) if (unlikely((OBJ)(R) == TR_UNDEF)) RETURN(TR_UNDEF)
 
 /* Interprets the code in b->code.
@@ -188,35 +189,33 @@ static OBJ TrVM_interpret(VM, register TrFrame *f, TrBlock *b, int start, int ar
     OP(BOING):      DISPATCH;
 
     /* register loading */
-    OP(MOVE):       R[A] = R[B]; DISPATCH;
-    OP(LOADK):      R[A] = k[Bx]; DISPATCH;
+    OP(MOVE):       R[A] = R[B];                           DISPATCH;
+    OP(LOADK):      R[A] = k[Bx];                          DISPATCH;
     OP(STRING):     R[A] = TrString_new2(vm, strings[Bx]); DISPATCH;
-    OP(SELF):       R[A] = f->self; DISPATCH;
-    OP(NIL):        R[A] = TR_NIL; DISPATCH;
-    OP(BOOL):       R[A] = B; DISPATCH;
-    OP(NEWARRAY):   R[A] = TrArray_new3(vm, B, &R[A+1]); DISPATCH;
-    OP(NEWHASH):    R[A] = TrHash_new2(vm, B, &R[A+1]); DISPATCH;
+    OP(SELF):       R[A] = f->self;                        DISPATCH;
+    OP(NIL):        R[A] = TR_NIL;                         DISPATCH;
+    OP(BOOL):       R[A] = B;                              DISPATCH;
+    OP(NEWARRAY):   R[A] = TrArray_new3(vm, B, &R[A+1]);   DISPATCH;
+    OP(NEWHASH):    R[A] = TrHash_new2(vm, B, &R[A+1]);    DISPATCH;
     OP(NEWRANGE):   R[A] = TrRange_new(vm, R[A], R[B], C); DISPATCH;
 
     /* return */
     OP(RETURN):     RETURN(R[A]);
-    OP(THROW):
-      vm->throw_reason = A;
-      vm->throw_value = R[B];
-      RETURN(TR_UNDEF);
-    OP(YIELD):      VM_RETHROW(R[A] = TrVM_yield(vm, f, B, &R[A+1])); DISPATCH;
+    OP(THROW):      vm->throw_reason = A; vm->throw_value = R[B];
+                    RETURN(TR_UNDEF);
+    OP(YIELD):      VM_RETHROW(R[A] = TrVM_yield(vm, f, B, &R[A+1]));             DISPATCH;
 
     /* variable and consts */
     OP(SETUPVAL):   assert(upvals && upvals[B].value); *(upvals[B].value) = R[A]; DISPATCH;
-    OP(GETUPVAL):   assert(upvals); R[A] = *(upvals[B].value); DISPATCH;
-    OP(SETIVAR):    TR_KH_SET(TR_COBJECT(f->self)->ivars, k[Bx], R[A]); DISPATCH;
-    OP(GETIVAR):    R[A] = TR_KH_GET(TR_COBJECT(f->self)->ivars, k[Bx]); DISPATCH;
-    OP(SETCVAR):    TR_KH_SET(TR_COBJECT(f->class)->ivars, k[Bx], R[A]); DISPATCH;
-    OP(GETCVAR):    R[A] = TR_KH_GET(TR_COBJECT(f->class)->ivars, k[Bx]); DISPATCH;
-    OP(SETCONST):   TrObject_const_set(vm, f->self, k[Bx], R[A]); DISPATCH;
-    OP(GETCONST):   R[A] = TrObject_const_get(vm, f->self, k[Bx]); DISPATCH;
-    OP(SETGLOBAL):  TR_KH_SET(vm->globals, k[Bx], R[A]); DISPATCH;
-    OP(GETGLOBAL):  R[A] = TR_KH_GET(vm->globals, k[Bx]); DISPATCH;
+    OP(GETUPVAL):   assert(upvals); R[A] = *(upvals[B].value);                    DISPATCH;
+    OP(SETIVAR):    TR_KH_SET(TR_COBJECT(f->self)->ivars, k[Bx], R[A]);           DISPATCH;
+    OP(GETIVAR):    R[A] = TR_KH_GET(TR_COBJECT(f->self)->ivars, k[Bx]);          DISPATCH;
+    OP(SETCVAR):    TR_KH_SET(TR_COBJECT(f->class)->ivars, k[Bx], R[A]);          DISPATCH;
+    OP(GETCVAR):    R[A] = TR_KH_GET(TR_COBJECT(f->class)->ivars, k[Bx]);         DISPATCH;
+    OP(SETCONST):   TrObject_const_set(vm, f->self, k[Bx], R[A]);                 DISPATCH;
+    OP(GETCONST):   R[A] = TrObject_const_get(vm, f->self, k[Bx]);                DISPATCH;
+    OP(SETGLOBAL):  TR_KH_SET(vm->globals, k[Bx], R[A]);                          DISPATCH;
+    OP(GETGLOBAL):  R[A] = TR_KH_GET(vm->globals, k[Bx]);                         DISPATCH;
 
     /* method calling */
     OP(LOOKUP):     VM_RETHROW(call = (TrCallSite*)TrVM_lookup(vm, b, R[A], k[Bx], ip)); DISPATCH;
@@ -296,10 +295,10 @@ static OBJ TrVM_interpret(VM, register TrFrame *f, TrBlock *b, int start, int ar
     }
 
     /* definition */
-    OP(DEF):        VM_RETHROW(TrVM_defmethod(vm, f, k[Bx], blocks[A], 0, 0)); DISPATCH;
+    OP(DEF):        VM_RETHROW(TrVM_defmethod(vm, f, k[Bx], blocks[A], 0, 0));           DISPATCH;
     OP(METADEF):    VM_RETHROW(TrVM_defmethod(vm, f, k[Bx], blocks[A], 1, R[nA])); ip++; DISPATCH;
-    OP(CLASS):      VM_RETHROW(TrVM_defclass(vm, k[Bx], blocks[A], 0, R[nA])); ip++; DISPATCH;
-    OP(MODULE):     VM_RETHROW(TrVM_defclass(vm, k[Bx], blocks[A], 1, 0)); DISPATCH;
+    OP(CLASS):      VM_RETHROW(TrVM_defclass(vm, k[Bx], blocks[A], 0, R[nA])); ip++;     DISPATCH;
+    OP(MODULE):     VM_RETHROW(TrVM_defclass(vm, k[Bx], blocks[A], 1, 0));               DISPATCH;
 
     /* jumps */
     OP(JMP):        ip += sBx; DISPATCH;
@@ -308,17 +307,18 @@ static OBJ TrVM_interpret(VM, register TrFrame *f, TrBlock *b, int start, int ar
 
     /* arithmetic optimizations */
     /* TODO cache lookup in tr_send and force send if method was redefined */
-    #define ARITH_OPT(MSG, FUNC) {\
-      OBJ rb = RK(B); \
-      if (likely(TR_IS_FIX(rb))) \
-        R[A] = FUNC; \
-      else \
-        R[A] = tr_send(rb, MSG, RK(C)); \
-    }
+#define ARITH_OPT(MSG, FUNC) {          \
+          OBJ rb = RK(B);               \
+          if (likely(TR_IS_FIX(rb)))    \
+              R[A] = FUNC;              \
+          else                          \
+              R[A] = tr_send(rb, MSG, RK(C));   \
+      }
+
     OP(ADD):        ARITH_OPT(vm->sADD, TR_INT2FIX(TR_FIX2INT(rb) + TR_FIX2INT(RK(C))) ); DISPATCH;
     OP(SUB):        ARITH_OPT(vm->sSUB, TR_INT2FIX(TR_FIX2INT(rb) - TR_FIX2INT(RK(C))) ); DISPATCH;
-    OP(LT):         ARITH_OPT(vm->sLT, TR_BOOL(TR_FIX2INT(rb) < TR_FIX2INT(RK(C))) ); DISPATCH;
-    OP(NEG):        ARITH_OPT(vm->sNEG, TR_INT2FIX(-TR_FIX2INT(rb)) ); DISPATCH;
+    OP(LT):         ARITH_OPT(vm->sLT, TR_BOOL(TR_FIX2INT(rb) < TR_FIX2INT(RK(C))) );     DISPATCH;
+    OP(NEG):        ARITH_OPT(vm->sNEG, TR_INT2FIX(-TR_FIX2INT(rb)) );                    DISPATCH;
     OP(NOT): {
       OBJ rb = RK(B);
       R[A] = TR_BOOL(!TR_TEST(rb));
@@ -329,27 +329,25 @@ static OBJ TrVM_interpret(VM, register TrFrame *f, TrBlock *b, int start, int ar
 
 /* returns the backtrace of the current call frames */
 OBJ TrVM_backtrace(VM) {
-  OBJ backtrace = TrArray_new(vm);
+    OBJ backtrace = TrArray_new(vm);
 
-  if (!vm->frame) return backtrace;
+    if (!vm->frame) return backtrace;
 
-  /* skip a frame since it's the one doing the raising */
-  TrFrame *f = vm->frame->previous;
-  while (f) {
-    OBJ str;
-    char *filename = f->filename ? TR_STR_PTR(f->filename) : "?";
-    if (f->method)
-      str = tr_sprintf(vm, "\tfrom %s:%lu:in `%s'",
-                       filename, f->line, TR_STR_PTR(TR_CMETHOD(f->method)->name));
-    else
-      str = tr_sprintf(vm, "\tfrom %s:%lu",
-                       filename, f->line);
-    TR_ARRAY_PUSH(backtrace, str);
+    /* skip a frame since it's the one doing the raising */
+    TrFrame *f = vm->frame->previous;
+    while (f) {
+        OBJ str;
+        char *filename = f->filename ? TR_STR_PTR(f->filename) : "?";
+        if (f->method)
+            str = tr_sprintf(vm, "\tfrom %s:%lu:in `%s'",
+                             filename, f->line, TR_STR_PTR(TR_CMETHOD(f->method)->name));
+        else
+            str = tr_sprintf(vm, "\tfrom %s:%lu", filename, f->line);
+        TR_ARRAY_PUSH(backtrace, str);
+        f = f->previous;
+    }
 
-    f = f->previous;
-  }
-
-  return backtrace;
+    return backtrace;
 }
 
 OBJ TrVM_eval(VM, char *code, char *filename) {
