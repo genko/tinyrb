@@ -22,3 +22,4 @@ puts a[1]
 
 puts a.last
 # => 4
+

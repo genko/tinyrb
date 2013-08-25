@@ -43,3 +43,7 @@ puts "ohaie".substring(2,3)
 # => aie
 puts "ohaie".substring(2,4)
 # => 
+
+a = "yukang"
+puts a.size
+# => 6
