@@ -1,4 +1,4 @@
-CC = clang
+CC = gcc
 CFLAGS = -std=c99 -Wall -Wextra -D_XOPEN_SOURCE -DDEBUG -g ${OPTIMIZE}
 INCS = -Ivm -Ivendor/bdwgc/include -Ivendor/pcre -Ivendor
 LIBS = ${GC} ${PCRE}
