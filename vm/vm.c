@@ -27,7 +27,7 @@ static OBJ TrVM_lookup(VM, TrBlock *b, OBJ receiver, OBJ msg, TrInst *ip) {
     s->method = TrObject_method(vm, receiver, tr_intern("method_missing"));
     s->method_missing = 1;
   }
-  
+
   /* Implement Monomorphic method cache by replacing the previous instruction (BOING)
      w/ CACHE that uses the CallSite to find the method instead of doing a full lookup. */
   if (GET_OPCODE(*boing) == TR_OP_CACHE) {
@@ -41,14 +41,14 @@ static OBJ TrVM_lookup(VM, TrBlock *b, OBJ receiver, OBJ msg, TrInst *ip) {
     SETARG_B(*boing, 1); /* jmp */
     SETARG_C(*boing, kv_size(b->sites)-1); /* CallSite index */
   }
-  
+
   return (OBJ)s;
 }
 
 static OBJ TrVM_defclass(VM, OBJ name, TrBlock *b, int module, OBJ super) {
   OBJ mod = TrObject_const_get(vm, vm->frame->class, name);
   RETHROW(mod);
-  
+
   if (!mod) { /* new module/class */
     if (module)
       mod = TrModule_new(vm, name);
@@ -126,7 +126,7 @@ static inline OBJ TrVM_yield(VM, TrFrame *f, int argc, OBJ argv[]) {
 #define NEXT_INST      (i = *++ip)
 #if TR_THREADED_DISPATCH
 #define OPCODES        static void *labels[] = { TR_OP_LABELS }; goto *labels[OPCODE];
-#define END_OPCODES    
+#define END_OPCODES
 #define OP(name)       op_##name
 #define DISPATCH       NEXT_INST; goto *labels[OPCODE]
 #else
@@ -178,15 +178,15 @@ static OBJ TrVM_interpret(VM, register TrFrame *f, TrBlock *b, int start, int ar
   TrCallSite *call = 0;
 
   /* transfer locals */
-  if (argc > 0) { 
+  if (argc > 0) {
     assert(argc <= (int)kv_size(b->locals) && "can't fit args in locals");
     TR_MEMCPY_N(stack, argv, OBJ, argc);
   }
-  
+
   OPCODES;
-    
+
     OP(BOING):      DISPATCH;
-    
+
     /* register loading */
     OP(MOVE):       R[A] = R[B]; DISPATCH;
     OP(LOADK):      R[A] = k[Bx]; DISPATCH;
@@ -197,7 +197,7 @@ static OBJ TrVM_interpret(VM, register TrFrame *f, TrBlock *b, int start, int ar
     OP(NEWARRAY):   R[A] = TrArray_new3(vm, B, &R[A+1]); DISPATCH;
     OP(NEWHASH):    R[A] = TrHash_new2(vm, B, &R[A+1]); DISPATCH;
     OP(NEWRANGE):   R[A] = TrRange_new(vm, R[A], R[B], C); DISPATCH;
-    
+
     /* return */
     OP(RETURN):     RETURN(R[A]);
     OP(THROW):
@@ -205,7 +205,7 @@ static OBJ TrVM_interpret(VM, register TrFrame *f, TrBlock *b, int start, int ar
       vm->throw_value = R[B];
       RETURN(TR_UNDEF);
     OP(YIELD):      VM_RETHROW(R[A] = TrVM_yield(vm, f, B, &R[A+1])); DISPATCH;
-    
+
     /* variable and consts */
     OP(SETUPVAL):   assert(upvals && upvals[B].value); *(upvals[B].value) = R[A]; DISPATCH;
     OP(GETUPVAL):   assert(upvals); R[A] = *(upvals[B].value); DISPATCH;
@@ -217,7 +217,7 @@ static OBJ TrVM_interpret(VM, register TrFrame *f, TrBlock *b, int start, int ar
     OP(GETCONST):   R[A] = TrObject_const_get(vm, f->self, k[Bx]); DISPATCH;
     OP(SETGLOBAL):  TR_KH_SET(vm->globals, k[Bx], R[A]); DISPATCH;
     OP(GETGLOBAL):  R[A] = TR_KH_GET(vm->globals, k[Bx]); DISPATCH;
-    
+
     /* method calling */
     OP(LOOKUP):     VM_RETHROW(call = (TrCallSite*)TrVM_lookup(vm, b, R[A], k[Bx], ip)); DISPATCH;
     OP(CACHE):
@@ -294,18 +294,18 @@ static OBJ TrVM_interpret(VM, register TrFrame *f, TrBlock *b, int start, int ar
       R[GETARG_A(ci)] = ret;
       DISPATCH;
     }
-    
+
     /* definition */
     OP(DEF):        VM_RETHROW(TrVM_defmethod(vm, f, k[Bx], blocks[A], 0, 0)); DISPATCH;
     OP(METADEF):    VM_RETHROW(TrVM_defmethod(vm, f, k[Bx], blocks[A], 1, R[nA])); ip++; DISPATCH;
     OP(CLASS):      VM_RETHROW(TrVM_defclass(vm, k[Bx], blocks[A], 0, R[nA])); ip++; DISPATCH;
     OP(MODULE):     VM_RETHROW(TrVM_defclass(vm, k[Bx], blocks[A], 1, 0)); DISPATCH;
-    
+
     /* jumps */
     OP(JMP):        ip += sBx; DISPATCH;
     OP(JMPIF):      if ( TR_TEST(R[A])) ip += sBx; DISPATCH;
     OP(JMPUNLESS):  if (!TR_TEST(R[A])) ip += sBx; DISPATCH;
-    
+
     /* arithmetic optimizations */
     /* TODO cache lookup in tr_send and force send if method was redefined */
     #define ARITH_OPT(MSG, FUNC) {\
@@ -330,9 +330,9 @@ static OBJ TrVM_interpret(VM, register TrFrame *f, TrBlock *b, int start, int ar
 /* returns the backtrace of the current call frames */
 OBJ TrVM_backtrace(VM) {
   OBJ backtrace = TrArray_new(vm);
-  
+
   if (!vm->frame) return backtrace;
-  
+
   /* skip a frame since it's the one doing the raising */
   TrFrame *f = vm->frame->previous;
   while (f) {
@@ -345,10 +345,10 @@ OBJ TrVM_backtrace(VM) {
       str = tr_sprintf(vm, "\tfrom %s:%lu",
                        filename, f->line);
     TR_ARRAY_PUSH(backtrace, str);
-    
+
     f = f->previous;
   }
-  
+
   return backtrace;
 }
 
@@ -362,15 +362,15 @@ OBJ TrVM_eval(VM, char *code, char *filename) {
 OBJ TrVM_load(VM, char *filename) {
   FILE *fp;
   struct stat stats;
-  
+
   if (stat(filename, &stats) == -1) tr_raise_errno(filename);
   fp = fopen(filename, "rb");
   if (!fp) tr_raise_errno(filename);
-  
+
   char *string = TR_ALLOC_N(char, stats.st_size + 1);
   if (fread(string, 1, stats.st_size, fp) == stats.st_size)
     return TrVM_eval(vm, string, filename);
-  
+
   tr_raise_errno(filename);
   return TR_NIL;
 }
@@ -384,14 +384,13 @@ OBJ TrVM_run(VM, TrBlock *b, OBJ self, OBJ class, int argc, OBJ argv[]) {
 }
 
 TrVM *TrVM_new() {
-  GC_INIT();
 
   TrVM *vm = TR_ALLOC(TrVM);
   vm->symbols = kh_init(str);
   vm->globals = kh_init(OBJ);
   vm->consts = kh_init(OBJ);
   vm->debug = 0;
-  
+
   /* bootstrap core classes,
      order is important here, so careful, mkay? */
   TrMethod_init(vm);
@@ -413,12 +412,12 @@ TrVM *TrVM_new() {
   classc->class = TrMetaClass_new(vm, objectc->class);
   methodc->class = TrMetaClass_new(vm, objectc->class);
   objectc->class = TrMetaClass_new(vm, objectc->class);
-  
+
   /* Some symbols are created before Object, so make sure all have proper class. */
   TR_KH_EACH(vm->symbols, i, sym, {
     TR_COBJECT(sym)->class = (OBJ)symbolc;
   });
-  
+
   /* bootstrap rest of core classes, order is no longer important here */
   TrObject_init(vm);
   TrError_init(vm);
@@ -431,23 +430,22 @@ TrVM *TrVM_new() {
   TrHash_init(vm);
   TrRange_init(vm);
   TrRegexp_init(vm);
-  
+
   vm->self = TrObject_alloc(vm, 0);
   vm->cf = -1;
-  
+
   /* cache some commonly used values */
   vm->sADD = tr_intern("+");
   vm->sSUB = tr_intern("-");
   vm->sLT = tr_intern("<");
   vm->sNEG = tr_intern("@-");
   vm->sNOT = tr_intern("!");
-  
+
   TR_FAILSAFE(TrVM_load(vm, "lib/boot.rb"));
-  
+
   return vm;
 }
 
 void TrVM_destroy(TrVM *vm) {
   kh_destroy(str, vm->symbols);
-  GC_gcollect();
 }
