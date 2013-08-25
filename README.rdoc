@@ -28,7 +28,7 @@ http://github.com/macournoyer/tinyrb
 * Alternate string delimiters (%q, %Q, etc.)
 * heredoc strings
 * Parallel assignment (a, b = 1, 2)
-* :: as . (Class::new)
+* as . (Class::new)
 * Character code literal (?c)
 * protected, private, public (yes everything is public, mind you)
 * ObjectSpace
