@@ -3,14 +3,14 @@ require "fileutils"
 
 class TestRunner
   include FileUtils
-  
+
   def initialize(pattern, dir)
     @total    = 0
     @failures = []
     @pattern  = pattern
     @dir      = dir
   end
-  
+
   def run
     cd @dir do
       Dir[@pattern].each do |file|
@@ -22,36 +22,36 @@ class TestRunner
           fail(file, expected, actual)
         end
       end
-      
+
       puts
-      
+
       @failures.each do |file, expected, actual|
         puts "[%s]" % file
         puts "    expected #{expected.inspect}"
         puts "         got #{actual.inspect}"
         puts
       end
-      
+
       puts "#{@total} tests, #{@failures.size} failures"
     end
   end
-  
+
   protected
-    def tinyrb(*args)
-      cmd = "./tinyrb #{args * ' '}"
-      `#{cmd}`.chomp
-    end
+  def tinyrb(*args)
+    cmd = "./tinyrb #{args * ''}"
+    `#{cmd}`.chomp
+  end
 
-    def pass(file)
-      @total += 1
-      print "."
-    end
+  def pass(file)
+    @total += 1
+    print "."
+  end
 
-    def fail(file, expected, actual)
-      @total += 1
-      @failures << [file, expected, actual]
-      print "F"
-    end
+  def fail(file, expected, actual)
+    @total += 1
+    @failures << [file, expected, actual]
+    print "F"
+  end
 end
 
 TestRunner.new("test/*.rb", File.dirname(__FILE__) + "/..").run
