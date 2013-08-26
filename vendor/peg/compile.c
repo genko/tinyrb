@@ -1,6 +1,6 @@
 /* Copyright (c) 2007 by Ian Piumarta
  * All rights reserved.
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the 'Software'),
  * to deal in the Software without restriction, including without limitation
@@ -10,9 +10,9 @@
  * permission notice appear in all copies of the Software.  Acknowledgement
  * of the use of this Software in supporting documentation would be
  * appreciated but is not required.
- * 
+ *
  * THE SOFTWARE IS PROVIDED 'AS IS'.  USE ENTIRELY AT YOUR OWN RISK.
- * 
+ *
  * Last edited: 2007-08-31 13:55:23 by piumarta on emilia.local
  */
 
@@ -107,11 +107,11 @@ static void Node_compile_c_ko(Node *node, int ko)
       break;
 
     case Dot:
-      fprintf(output, "  if (!yymatchDot()) goto l%d;", ko);
+      fprintf(output, "  if (!yymatchDot()) goto l%d;\n", ko);
       break;
 
     case Name:
-      fprintf(output, "  if (!yy_%s()) goto l%d;", node->name.rule->rule.name, ko);
+      fprintf(output, "  if (!yy_%s()) goto l%d;\n", node->name.rule->rule.name, ko);
       if (node->name.variable)
 	fprintf(output, "  yyDo(yySet, %d, 0);", node->name.variable->variable.offset);
       break;
@@ -121,14 +121,14 @@ static void Node_compile_c_ko(Node *node, int ko)
       {
 	int len= strlen(node->string.value);
 	if (1 == len || (2 == len && '\\' == node->string.value[0]))
-	  fprintf(output, "  if (!yymatchChar('%s')) goto l%d;", node->string.value, ko);
+	  fprintf(output, "  if (!yymatchChar('%s')) goto l%d;\n", node->string.value, ko);
 	else
-	  fprintf(output, "  if (!yymatchString(\"%s\")) goto l%d;", node->string.value, ko);
+	  fprintf(output, "  if (!yymatchString(\"%s\")) goto l%d;\n", node->string.value, ko);
       }
       break;
 
     case Class:
-      fprintf(output, "  if (!yymatchClass((unsigned char *)\"%s\")) goto l%d;", makeCharClass(node->cclass.value), ko);
+      fprintf(output, "  if (!yymatchClass((unsigned char *)\"%s\")) goto l%d;\n", makeCharClass(node->cclass.value), ko);
       break;
 
     case Action:
@@ -136,7 +136,7 @@ static void Node_compile_c_ko(Node *node, int ko)
       break;
 
     case Predicate:
-      fprintf(output, "  yyText(yybegin, yyend);  if (!(%s)) goto l%d;", node->action.text, ko);
+      fprintf(output, "  yyText(yybegin, yyend);  if (!(%s)) goto l%d;\n", node->action.text, ko);
       break;
 
     case Alternate:

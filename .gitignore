@@ -5,6 +5,12 @@
 *.lo
 *.la
 *.rbc
+GPATH
+GRTAGS
+GTAG
+cscope.files
+cscope.out
+gtags.files
 
 vm/grammar.c
 
