@@ -200,7 +200,6 @@ Break     = 'break'                         { $$ = NODE(BREAK, 0) }
 
 Value     = v:NUMBER                        { $$ = NODE(VALUE, v) }
           | v:SYMBOL                        { $$ = NODE(VALUE, v) }
-          | v:REGEXP                        { $$ = NODE(VALUE, v) }
           | v:STRING1                       { $$ = NODE(STRING, v) }
           | v:STRING2                       { $$ = NODE(STRING, v) }
           | v:CONST                         { $$ = NODE(CONST, v) }
@@ -274,13 +273,6 @@ STRING2   = '"'                             { STRING_START }
             | < [^\"] >                     { STRING_PUSH(yytext, yyleng) }  #" for higlighting
             )*
             '"'                             { $$ = TrString_new2(yyvm, sbuf) }
-
-REGEXP    = '/'                             { STRING_START }
-            (
-              ESC_CHAR
-            | < [^/] >                      { STRING_PUSH(yytext, yyleng) }
-            )*
-            '/'                             { $$ = TrRegexp_new(yyvm, sbuf, 0) }
 
 -         = [ \t]*
 SPACE     = [ ]+
