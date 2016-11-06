@@ -17,7 +17,7 @@ puts "oh\naie"
 puts "\"oh\" \\ \\n"
 # => "oh" \ \n
 
-puts '\''
+puts "'"
 # => '
 
 puts "

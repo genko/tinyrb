@@ -200,7 +200,6 @@ Break     = 'break'                         { $$ = NODE(BREAK, 0) }
 
 Value     = v:NUMBER                        { $$ = NODE(VALUE, v) }
           | v:SYMBOL                        { $$ = NODE(VALUE, v) }
-          | v:STRING1                       { $$ = NODE(STRING, v) }
           | v:STRING2                       { $$ = NODE(STRING, v) }
           | v:CONST                         { $$ = NODE(CONST, v) }
           | 'nil'                           { $$ = NODE(NIL, 0) }
@@ -252,12 +251,6 @@ CVAR      = < '@@' NAME >                   { $$ = TrSymbol_new(yyvm, yytext) }
 GLOBAL    = < '$' NAME >                    { $$ = TrSymbol_new(yyvm, yytext) }
 NUMBER    = < [0-9]+ >                      { $$ = TR_INT2FIX(atoi(yytext)) }
 SYMBOL    = ':' < (NAME | KEYWORD) >        { $$ = TrSymbol_new(yyvm, yytext) }
-
-STRING1   = '\''                            { STRING_START }
-            (
-              '\\\''                        { STRING_PUSH("'", 1) }
-            | < [^\'] >                     { STRING_PUSH(yytext, yyleng) }
-            )* '\''                         { $$ = TrString_new2(yyvm, sbuf) }
 
 ESC_CHAR  = '\\n'                           { STRING_PUSH("\n", 1) }
           | '\\b'                           { STRING_PUSH("\b", 1) }

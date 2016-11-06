@@ -4,6 +4,6 @@ class String
   end
 
   def inspect
-    '"' + self + '"'
+    "\"" + self + "\""
   end
 end
