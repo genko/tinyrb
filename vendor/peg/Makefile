@@ -47,7 +47,7 @@ test examples : .FORCE
 	$(SHELL) -ec '(cd examples;  $(MAKE))'
 
 clean : .FORCE
-	rm -f *~ *.o *.peg.[cd] *.leg.[cd]
+	rm -f *~ *.o *.peg.[cd] *.leg.[cd] peg leg
 	$(SHELL) -ec '(cd examples;  $(MAKE) $@)'
 
 spotless : clean .FORCE
